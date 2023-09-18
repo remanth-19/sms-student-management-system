@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block page_title %}{{page_title}}{% endblock page_title %}
+
+{% block content %}
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements -->
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">{{page_title}}</h3>
+                    </div>
+
+                   <!-- /.card-header -->
+                    <!-- form start -->
+<form id="upload_assignment" enctype="multipart/form-data">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Student Name</label>
+                            <select name="student" id='student' class="form-control">
+                           
+                                <option value="{{student.id}}">{{student}} </option>
+                               
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Assignment Name</label>
+                            <select name="assignment" class="form-control" id='assignment'>
+                               
+                                <option value="{{assignment.id}}">{{assignment.name}}</option>
+                               
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Upload Assignment</label>
+                            <input type="file" name="submission" class="form-control" id="submission"/>
+                               
+                            </select>
+                        </div>
+
+                        <div class='form-group'><button id='submit' class='btn btn-success' type='button'>Submit Assignment</button></div>
+                    </form>                     
+<div class="card card-primary">
+    <div class="card-header"><h3 class="card-title">Submitted Assignments</h3></div>
+   <div class="table">
+
+       <table class="table table-bordered">
+           <tr>
+               <th>ID</th>
+               <th>Assignment</th>
+               <th>Date of submission</th>
+               <th>Submitted document</th>
+                <th>Status</th>
+        </tr>
+        {% for assignment1 in assignments %}
+        <tr>
+            <td>{{forloop.counter}}</td>
+            <td>{{assignment1.assignment.name}}</td>
+            <td>{{assignment1.submission_date}}</td>
+              <td><a href="{% url 'view_pdf' assignment1.id %}">View</a></td>
+              <td>
+                  
+                  {% if assignment1.status == 0 %}
+                  <span class="badge badge-warning">Pending Acceptance</span>
+                  {% elif assignment1.status == 1 %}
+                  <span class="badge badge-success">Accepted</span>
+                  
+                    {% else %}
+                    <span class="badge badge-danger">Rejected</span>
+                    
+                    {% endif %}
+                    
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
+
+{% block custom_js %}
+<script>
+$(document).on('click', '#submit', function () {
+    $(this).attr("disabled", "disabled");
+    $(this).text("Submitting Assignment... ");
+    var student = $("#student").val();
+    var assignment = $('#assignment').val();
+    var submission = document.getElementById("submission"); // Corrected line
+
+    // Check if a file is selected
+    if (submission.files.length === 0) {
+        alert("Error! Please upload a file");
+        return false;
+    }
+
+    var formData = new FormData();
+    formData.append('student', student);
+    formData.append('assignment', assignment);
+    formData.append('submission', submission.files[0]);
+
+    $.ajax({
+        url: "{% url 'save_assignment' %}",
+        type: 'POST',
+        data: formData,
+        processData: false,  // Don't process the data
+        contentType: false,  // Don't set content type (it will be set automatically)
+    }).done(function (response) {
+        if (response == 'OK') {
+            alert("Assignment Submitted Successfully");
+        } else {
+            alert("Error. Please try again");
+        }
+        location.reload();
+    }).fail(function (response) {
+        alert("Error in submitting assignment");
+    });
+});
+
+
+
+
+</script>
+
+{% endblock custom_js %}

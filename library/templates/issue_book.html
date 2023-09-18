@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block page_title %}{{page_title}}{% endblock page_title %}
+{% block content %}
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- general form elements -->
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">{{page_title}}</h3>
+                    </div>
+
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <div class="card-body">
+
+                        <div class="form-group">
+                            <label>Select Student Name</label>
+                            <select name="student" id='student' class="form-control">
+                                <option value="">----</option>
+                                {% for student in students  %}
+                                <option value="{{student.id}}">{{student.last_name}}, {{student.first_name}} </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Select Category</label>
+                            <select name="category" class="form-control" id='category'>
+                                <option value="">----</option>
+                                {% for category in categories  %}
+                                <option value="{{category.id}}">{{category.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+
+                        
+                        {% comment %}
+
+                        <div>
+                            <label>Book Issue Date</label>
+                            <input type="date" class='form-control' name="issue_date" id='a_date' id="">
+                        </div>
+                        {% endcomment %}
+
+                    </div>
+                    <!-- /.card-body -->
+
+                    <div class="card-footer">
+                        <button type="button" id='fetch_books' class="btn btn-primary btn-block">Fetch
+                            Books</button>
+                        <div class="form-group" id="books_data">
+
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
+
+
+{% block custom_js %}
+<script>
+    $(document).ready(function () {
+
+       
+        $("#fetch_books").click(function () {
+            var category = $("#category").val()
+            var student = $("#student").val()
+            $("#books_data").html(null)
+if (category.length  == 0 || student.length == 0){
+    alert("Please select Category and Student name");
+    return false;
+}
+            $.ajax({
+                url: "{% url 'get_books' %}",
+                type: 'POST',
+                data: {
+                    category: category
+                }
+            }).done(function (response) {
+                var json_data = JSON.parse(response)
+                if (json_data.length < 1) {
+                    alert("No data to display")
+                } else {
+                    var div_data = "<hr/><div class='form-group'></div><div class='form-group'> <label>Book issue Date</label><input type='date' class='form-control' name='issue_date' id='issue_date' ><div class='row'>"
+                    div_data+= "<div class='form-group'><label>Select Book</label><select name='book' id='book' class='form-control'><option value=''>----</option>"
+                    for (key in json_data) {
+                        div_data+="<option value="+json_data[key]['id'] +">"+json_data[key]['name'] +"</option>"
+                        div_data+="</select></div>"
+                    }
+                    
+                    div_data += "<div class='form-group'><button id='issue_book' class='btn btn-success' type='button'>Issue Book</button></div>"
+                    $("#books_data").html(div_data)
+                }
+            }).fail(function (response) {
+                alert("Error in fetching Books")
+            })
+
+
+            $(document).on('click', '#issue_book', function () {
+                $(this).attr("disabled","disabled")
+                $(this).text("Issuing Book... ")
+                var book = $("#book").val()
+                var issue_date = $('#issue_date').val()
+                if (book.length == 0){
+                    alert("Error!")
+                    return false;
+                }
+                if (issue_date.length < 10){
+                    alert("Select date")
+                    return false;
+                }
+                $.ajax({
+                    url: "{% url 'save_book_issue_data' %}",
+                    type: 'POST',
+                    data: {
+                        date: issue_date,
+                        student: student,
+                        category: category,
+                        book: book
+            
+                    }
+                }).done(function (response) {
+                    if (response == 'OK'){
+                        alert("Book Issued!")
+                    }else{
+                        alert("Error. Please try again")
+                    }
+                    location.reload()
+                    
+                }).fail(function (response) {
+                    alert("Error in issuing book")
+                })
+    
+            })
+
+
+        })
+    })
+</script>
+{% endblock custom_js %}

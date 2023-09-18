@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">{{page_title}}</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <table id="example2" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>SN</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Gender</th>
+                                    
+                                    <th>Options</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lib in lib_admin %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{lib.last_name}}, {{lib.first_name}}</td>
+                                    <td>{{lib.email}}</td>
+                                    <td>{{lib.gender}}</td>
+                                
+                                    
+                                    <td>
+                                        <a href="{% url 'edit_library_admin' forloop.counter %}" class="btn btn-primary">Edit</a> 
+                                        <a href="{% url 'delete_library_admin' forloop.counter %}" class="btn btn-danger" onclick="return confirm('Are you sure about this ?')">Delete</a>
+                            
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
